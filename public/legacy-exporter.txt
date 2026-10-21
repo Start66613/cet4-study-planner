@@ -1,0 +1,12 @@
+// 在旧版网页所在浏览器中打开开发者工具 → Console，粘贴下面完整代码并运行。
+// 仅导出 cet26_ 前缀的数据，不修改或删除旧记录。不要在不认识的网站运行。
+(() => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('cet26_')) data[key] = localStorage.getItem(key);
+  }
+  const url = URL.createObjectURL(new Blob([JSON.stringify({app:'studyflow-legacy',data}, null, 2)], {type:'application/json'}));
+  const a = document.createElement('a'); a.href = url; a.download = 'studyflow-legacy-backup.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+})();
