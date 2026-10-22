@@ -11,6 +11,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -23,7 +24,18 @@ jobs:
         env:
           VITE_BASE: /cet4-study-planner/
       - run: npm run check:privacy
-      - run: npx playwright install --with-deps chromium webkit
+      - name: Use official Ubuntu HTTPS mirrors
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            echo 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
+          if [ -f /etc/apt/apt-security-mirrors.txt ]; then
+            echo 'https://security.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-security-mirrors.txt
+          fi
+          printf 'Acquire::Retries "2";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' | sudo tee /etc/apt/apt.conf.d/99-studyflow-network
+      - name: Install browser dependencies
+        timeout-minutes: 10
+        run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
